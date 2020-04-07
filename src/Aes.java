@@ -5,7 +5,6 @@ import java.nio.file.Paths;
 
 public class Aes {
 
-
     /**
      * this function gets a path, reads a file and returns an array of bytes
      * @param path to the file
@@ -30,33 +29,55 @@ public class Aes {
     }
 
     /**
-     * The function receives a message and 3 keys and uses the AES algorithm to decvrypt/encrypt the message
+     * The function receives a message and 3 keys and encrypts the message using the 3 keys
      *
      * @param message
      * @param firstKey
      * @param secondKey
      * @param thirdKey
-     * @return aesMessage
+     * @return blockToEncrypt
      */
-    public byte[][] advancedEncryptionStandard(byte[][] message, byte[][] firstKey, byte[][] secondKey, byte[][] thirdKey) {
+    public byte[][] encryptMessage(byte[][] message, byte[][] firstKey, byte[][] secondKey, byte[][] thirdKey) {
 
-        byte[][] aesMessage = new byte[4][4];
-        for (int i = 0; i < aesMessage.length; i++) {
-            for (int j = 0; j < aesMessage[0].length; j++) {
-                aesMessage[i][j] = message[i][j];
+        byte[][] blockToEncrypt = new byte[4][4];
+        for (int i = 0; i < blockToEncrypt.length; i++) {
+            for (int j = 0; j < blockToEncrypt[0].length; j++) {
+                blockToEncrypt[i][j] = message[i][j];
             }
         }
         //first iteration
-        aesMessage = shiftColumns(aesMessage);
-        aesMessage = addRoundKey(aesMessage, firstKey);
+        blockToEncrypt = shiftColumns(blockToEncrypt);
+        blockToEncrypt = addRoundKey(blockToEncrypt, firstKey);
         //second iteration
-        aesMessage = shiftColumns(aesMessage);
-        aesMessage = addRoundKey(aesMessage, secondKey);
+        blockToEncrypt = shiftColumns(blockToEncrypt);
+        blockToEncrypt = addRoundKey(blockToEncrypt, secondKey);
         //third iteration
-        aesMessage = shiftColumns(aesMessage);
-        aesMessage = addRoundKey(aesMessage, thirdKey);
+        blockToEncrypt = shiftColumns(blockToEncrypt);
+        blockToEncrypt = addRoundKey(blockToEncrypt, thirdKey);
 
-        return aesMessage;
+        return blockToEncrypt;
+    }
+
+    public byte[][] decryptMessage(byte[][] message, byte[][] firstKey, byte[][] secondKey, byte[][] thirdKey){
+
+        byte[][] blocktoDecryppt = new byte[4][4];
+        for (int i = 0; i < blocktoDecryppt.length; i++) {
+            for (int j = 0; j < blocktoDecryppt[0].length; j++) {
+                blocktoDecryppt[i][j] = message[i][j];
+            }
+        }
+
+        //first iteration
+        blocktoDecryppt = addRoundKey(blocktoDecryppt, thirdKey);
+        blocktoDecryppt = shiftColumnsBackwards(blocktoDecryppt);
+        //second iteration
+        blocktoDecryppt = addRoundKey(blocktoDecryppt, secondKey);
+        blocktoDecryppt = shiftColumnsBackwards(blocktoDecryppt);
+        //third iteration
+        blocktoDecryppt = addRoundKey(blocktoDecryppt, firstKey);
+        blocktoDecryppt = shiftColumnsBackwards(blocktoDecryppt);
+
+        return blocktoDecryppt;
     }
 
     /**
@@ -147,42 +168,6 @@ public class Aes {
             }
         }
         return roundedMessage;
-    }
-
-    /**
-     * this function takes an array of bytes and converts it into a matrix
-     * @param byteArr
-     * @return
-     */
-    public byte [][] convertToMatrix (byte [] byteArr){
-        int numOfCol = byteArr.length/4;
-        byte [][] matrix = new byte [4][numOfCol];
-        int indexOfByteArray = 0;
-        for(int i=0; i<numOfCol;i++){
-            for(int j=0;j<4; j++){
-                matrix[j][i]=byteArr[indexOfByteArray];
-                indexOfByteArray++;
-            }
-        }
-        return matrix;
-    }
-
-    /**
-     * this function takes a matrix and converts it into an array
-     * @param matrix of bytes
-     * @return the array
-     */
-    public byte [] convertMatrixToArr (byte [][] matrix){
-        int arrLength = matrix.length * matrix[0].length;
-        byte [] arrByte = new byte [arrLength];
-        int counter = 0;
-        for(int i=0; i<matrix[0].length;i++){
-            for(int j=0; j<matrix.length; j++){
-                arrByte[counter]=matrix[j][i];
-                counter++;
-            }
-        }
-        return arrByte;
     }
 
 
