@@ -29,37 +29,37 @@ public class Aes {
     }
 
     /**
-     * The function receives a message and 3 keys and encrypts the message using the 3 keys
+     * The function receives a message and 3 keys and uses the AES algorithm to decvrypt/encrypt the message
      *
      * @param message
      * @param firstKey
      * @param secondKey
      * @param thirdKey
-     * @return blockToEncrypt
+     * @return aesMessage
      */
-    public byte[][] encryptMessage(byte[][] message, byte[][] firstKey, byte[][] secondKey, byte[][] thirdKey) {
+    public byte[][] advancedEncryptionStandard(byte[][] message, byte[][] firstKey, byte[][] secondKey, byte[][] thirdKey) {
 
-        byte[][] blockToEncrypt = new byte[4][4];
-        for (int i = 0; i < blockToEncrypt.length; i++) {
-            for (int j = 0; j < blockToEncrypt[0].length; j++) {
-                blockToEncrypt[i][j] = message[i][j];
+        byte[][] aesMessage = new byte[4][4];
+        for (int i = 0; i < aesMessage.length; i++) {
+            for (int j = 0; j < aesMessage[0].length; j++) {
+                aesMessage[i][j] = message[i][j];
             }
         }
         //first iteration
-        blockToEncrypt = shiftColumns(blockToEncrypt);
-        blockToEncrypt = addRoundKey(blockToEncrypt, firstKey);
+        aesMessage = shiftColumns(aesMessage);
+        aesMessage = addRoundKey(aesMessage, firstKey);
         //second iteration
-        blockToEncrypt = shiftColumns(blockToEncrypt);
-        blockToEncrypt = addRoundKey(blockToEncrypt, secondKey);
+        aesMessage = shiftColumns(aesMessage);
+        aesMessage = addRoundKey(aesMessage, secondKey);
         //third iteration
-        blockToEncrypt = shiftColumns(blockToEncrypt);
-        blockToEncrypt = addRoundKey(blockToEncrypt, thirdKey);
+        aesMessage = shiftColumns(aesMessage);
+        aesMessage = addRoundKey(aesMessage, thirdKey);
 
-        return blockToEncrypt;
+        return aesMessage;
     }
 
     /**
-     * The function shifts the message's columns
+     * The function shifts the message's columns upwards (for encryption)
      * @param message
      * @return shiftedMessage
      */
@@ -70,16 +70,19 @@ public class Aes {
         for (int i = 0; i < 4; i++) {
             shiftedMessage[i][0] = message[i][0];
         }
+
         //shifting the second column one cell upwards
         for (int i = 1; i < 4; i++) {
             shiftedMessage[i-1][1] = message[i][1];
         }
         shiftedMessage[3][1] = message[0][1];
+
         //shifting the third column two cells upwards
         shiftedMessage[0][2] = message[2][2];
         shiftedMessage[1][2] = message[3][2];
         shiftedMessage[2][2] = message[0][2];
         shiftedMessage[3][2] = message[1][2];
+
         //shifting the fourth column three cells upwards
         for(int i=0; i<3; i++){
             shiftedMessage[i+1][3] = message[i][3];
@@ -89,6 +92,11 @@ public class Aes {
         return shiftedMessage;
     }
 
+    /**
+     * The function shifts the message's columns downwards (for decryption)
+     * @param message
+     * @return shiftedMessage
+     */
     private byte[][] shiftColumnsBackwards(byte[][] message){
 
         byte[][] shiftedMessage = new byte[4][4];
@@ -101,6 +109,17 @@ public class Aes {
             shiftedMessage[i][1] = message[i-1][1];
         }
         shiftedMessage[0][1] = message[3][1];
+        //shifting the third column two cells downwards
+        shiftedMessage[0][2] = message[2][2];
+        shiftedMessage[1][2] = message[3][2];
+        shiftedMessage[2][2] = message[0][2];
+        shiftedMessage[3][2] = message[1][2];
+
+        //shifting the fourth column three cells downwards
+        for(int i=0; i<3; i++){
+            shiftedMessage[i][3] = message[i+1][3];
+        }
+        shiftedMessage[3][3] = message[0][3];
 
         return shiftedMessage;
     }
