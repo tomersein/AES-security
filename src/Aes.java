@@ -16,4 +16,15 @@ public class Aes {
         byte [] arrByte = Files.readAllBytes(filePath);
         return arrByte;
     }
+
+    /**
+     * this function takes an array and writes it into a file
+     * @param path the path we will write the file to
+     * @param arrByte the array we will write to a file
+     * @throws IOException
+     */
+    public void writeKeys (String path, byte [] arrByte) throws IOException {
+        Path filePath = Paths.get(path);
+        Files.write(filePath,arrByte);
+    }
 }
