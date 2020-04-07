@@ -58,30 +58,8 @@ public class Aes {
         return blockToEncrypt;
     }
 
-    public byte[][] decryptMessage(byte[][] message, byte[][] firstKey, byte[][] secondKey, byte[][] thirdKey){
-
-        byte[][] blocktoDecryppt = new byte[4][4];
-        for (int i = 0; i < blocktoDecryppt.length; i++) {
-            for (int j = 0; j < blocktoDecryppt[0].length; j++) {
-                blocktoDecryppt[i][j] = message[i][j];
-            }
-        }
-
-        //first iteration
-        blocktoDecryppt = addRoundKey(blocktoDecryppt, thirdKey);
-        blocktoDecryppt = shiftColumnsBackwards(blocktoDecryppt);
-        //second iteration
-        blocktoDecryppt = addRoundKey(blocktoDecryppt, secondKey);
-        blocktoDecryppt = shiftColumnsBackwards(blocktoDecryppt);
-        //third iteration
-        blocktoDecryppt = addRoundKey(blocktoDecryppt, firstKey);
-        blocktoDecryppt = shiftColumnsBackwards(blocktoDecryppt);
-
-        return blocktoDecryppt;
-    }
-
     /**
-     * The function shifts the message's columns upwards (for encryption)
+     * The function shifts the message's columns
      * @param message
      * @return shiftedMessage
      */
@@ -92,19 +70,16 @@ public class Aes {
         for (int i = 0; i < 4; i++) {
             shiftedMessage[i][0] = message[i][0];
         }
-
         //shifting the second column one cell upwards
         for (int i = 1; i < 4; i++) {
             shiftedMessage[i-1][1] = message[i][1];
         }
         shiftedMessage[3][1] = message[0][1];
-
         //shifting the third column two cells upwards
         shiftedMessage[0][2] = message[2][2];
         shiftedMessage[1][2] = message[3][2];
         shiftedMessage[2][2] = message[0][2];
         shiftedMessage[3][2] = message[1][2];
-
         //shifting the fourth column three cells upwards
         for(int i=0; i<3; i++){
             shiftedMessage[i+1][3] = message[i][3];
@@ -114,11 +89,6 @@ public class Aes {
         return shiftedMessage;
     }
 
-    /**
-     * The function shifts the message's columns downwards (for decryption)
-     * @param message
-     * @return shiftedMessage
-     */
     private byte[][] shiftColumnsBackwards(byte[][] message){
 
         byte[][] shiftedMessage = new byte[4][4];
@@ -131,17 +101,6 @@ public class Aes {
             shiftedMessage[i][1] = message[i-1][1];
         }
         shiftedMessage[0][1] = message[3][1];
-        //shifting the third column two cells downwards
-        shiftedMessage[0][2] = message[2][2];
-        shiftedMessage[1][2] = message[3][2];
-        shiftedMessage[2][2] = message[0][2];
-        shiftedMessage[3][2] = message[1][2];
-
-        //shifting the fourth column three cells downwards
-        for(int i=0; i<3; i++){
-            shiftedMessage[i][3] = message[i+1][3];
-        }
-        shiftedMessage[3][3] = message[0][3];
 
         return shiftedMessage;
     }
@@ -168,6 +127,42 @@ public class Aes {
             }
         }
         return roundedMessage;
+    }
+
+    /**
+     * this function takes an array of bytes and converts it into a matrix
+     * @param byteArr
+     * @return
+     */
+    public byte [][] convertToMatrix (byte [] byteArr){
+        int numOfCol = byteArr.length/4;
+        byte [][] matrix = new byte [4][numOfCol];
+        int indexOfByteArray = 0;
+        for(int i=0; i<numOfCol;i++){
+            for(int j=0;j<4; j++){
+                matrix[j][i]=byteArr[indexOfByteArray];
+                indexOfByteArray++;
+            }
+        }
+        return matrix;
+    }
+
+    /**
+     * this function takes a matrix and converts it into an array
+     * @param matrix of bytes
+     * @return the array
+     */
+    public byte [] convertMatrixToArr (byte [][] matrix){
+        int arrLength = matrix.length * matrix[0].length;
+        byte [] arrByte = new byte [arrLength];
+        int counter = 0;
+        for(int i=0; i<matrix[0].length;i++){
+            for(int j=0; j<matrix.length; j++){
+                arrByte[counter]=matrix[j][i];
+                counter++;
+            }
+        }
+        return arrByte;
     }
 
 
