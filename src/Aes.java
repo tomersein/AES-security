@@ -59,6 +59,41 @@ public class Aes {
     }
 
     /**
+     * The function receives a message and 3 keys and decrypts the message using the 3 keys
+     *
+     * @param message
+     * @param firstKey
+     * @param secondKey
+     * @param thirdKey
+     * @return
+     */
+    public byte[][] decryptMessage(byte[][] message, byte[][] firstKey, byte[][] secondKey, byte[][] thirdKey) {
+
+        byte[][] blockToEncrypt = new byte[4][4];
+        for (int i = 0; i < blockToEncrypt.length; i++) {
+            for (int j = 0; j < blockToEncrypt[0].length; j++) {
+                blockToEncrypt[i][j] = message[i][j];
+            }
+        }
+        //first iteration
+        blockToEncrypt = addRoundKey(blockToEncrypt, thirdKey);
+        blockToEncrypt = shiftColumnsBackwards(blockToEncrypt);
+
+        //second iteration
+        blockToEncrypt = addRoundKey(blockToEncrypt, secondKey);
+        blockToEncrypt = shiftColumnsBackwards(blockToEncrypt);
+
+        //third iteration
+        blockToEncrypt = addRoundKey(blockToEncrypt, firstKey);
+        blockToEncrypt = shiftColumnsBackwards(blockToEncrypt);
+
+
+        return blockToEncrypt;
+    }
+
+
+
+    /**
      * The function shifts the message's columns
      * @param message
      * @return shiftedMessage
