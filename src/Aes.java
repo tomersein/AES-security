@@ -89,6 +89,22 @@ public class Aes {
         return shiftedMessage;
     }
 
+    private byte[][] shiftColumnsBackwards(byte[][] message){
+
+        byte[][] shiftedMessage = new byte[4][4];
+        //not touching the first column
+        for (int i = 0; i < 4; i++) {
+            shiftedMessage[i][0] = message[i][0];
+        }
+        //shifting the second column one cell downwards
+        for (int i = 1; i < 4; i++) {
+            shiftedMessage[i][1] = message[i-1][1];
+        }
+        shiftedMessage[0][1] = message[3][1];
+
+        return shiftedMessage;
+    }
+
     /**
      * The function adds the key to the message by using the 'xor' function
      * @param message
@@ -112,5 +128,8 @@ public class Aes {
         }
         return roundedMessage;
     }
+
+
+
 }
 
