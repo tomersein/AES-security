@@ -217,8 +217,8 @@ public class Aes {
         byte[] firstKeyVal = new byte[128];
         byte[] secondKeyVal = new byte[128];
         for (int i = 0; i < firstKeyVal.length; i++) {
-            firstKeyVal[i] = (byte)((int)(Math.random()*128));
-            secondKeyVal[i] = (byte)((int)(Math.random()*128));
+            firstKeyVal[i] = (byte) ((int) (Math.random() * 128));
+            secondKeyVal[i] = (byte) ((int) (Math.random() * 128));
         }
         byte[][] firstRandomKey = convertToMatrix(firstKeyVal);
         byte[][] secondRandomKey = convertToMatrix(secondKeyVal);
@@ -230,8 +230,21 @@ public class Aes {
         attackingBlock = addRoundKey(message, secondRandomKey);
 
         //with the two cipher-texts we can now find the actual third key:
+        thirdKey = retrievekey(attackingBlock, cipher);
+
+        //todo: add later what the function returns, check how to connect to the calling function
 
     }
 
+    private byte[][] retrievekey(byte[][] message, byte[][] cipher) {
+
+        byte[][] key = new byte[4][4];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                key[i][j] = (byte) (message[i][j] ^ cipher[i][j]);
+            }
+        }
+        return key;
+    }
 }
 
