@@ -4,9 +4,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 
 public class Aes {
+
 
     /**
      * this function gets a path, reads a file and returns an array of bytes
@@ -43,8 +43,8 @@ public class Aes {
         int numOfKey = 0;
         int indexInMainArr=0;
         while (numOfKey<3){
-            byte [] tempArr = new byte[128];
-            for(int i=0;i<128;i++){
+            byte [] tempArr = new byte[(keys.length/3)];
+            for(int i=0;i<tempArr.length;i++){
                 tempArr[i]=keys[indexInMainArr];
                 indexInMainArr++;
             }
@@ -65,13 +65,33 @@ public class Aes {
         byte [] keys = readKey(pathToKey);
         ArrayList separateKeys = separateKeys(keys);
         byte [] message = readKey(pathToInput);
-        byte [][] matrixMessage = convertToMatrix(message);
         byte [][] firstKey = convertToMatrix((byte[]) separateKeys.get(0));
         byte [][] secondKey = convertToMatrix((byte[]) separateKeys.get(1));
         byte [][] thirdKey = convertToMatrix((byte[]) separateKeys.get(2));
-        byte [][] encryptedMessage = encryptMessage(matrixMessage,firstKey,secondKey,thirdKey);
-        byte [] messageToDisk = convertMatrixToArr(encryptedMessage);
-        writeKeys(pathToOutput,messageToDisk);
+        int index = 0;
+        byte [] finalToDisk = new byte[message.length];
+        while(index<message.length){
+            byte [] toEncrypt = new byte [16];
+            for(int i=0;i<16;i++){
+                toEncrypt[i]=message[i+index];
+            }
+            byte [][] matrixMessage = convertToMatrix(toEncrypt);
+            byte [][] encryptedMessage = encryptMessage(matrixMessage,firstKey,secondKey,thirdKey);
+            byte [] tempMessageToDisk = convertMatrixToArr(encryptedMessage);
+            for(int i=0;i<tempMessageToDisk.length;i++){
+                finalToDisk[i+index]=tempMessageToDisk[i];
+            }
+            index=index+16;
+        }
+
+        //FOR TEST ONLY
+
+        /*
+        byte [] forTEST = readKey("D:\\AES3_test_files\\test files\\cipher_short");
+        System.out.println(Arrays.equals(forTEST,finalToDisk));
+        */
+
+        writeKeys(pathToOutput,finalToDisk);
     }
 
     /**
@@ -83,6 +103,7 @@ public class Aes {
      * @throws IOException
      */
     public void decrypt (String pathToKey, String pathToInput, String pathToOutput) throws IOException {
+        /*
         byte [] keys = readKey(pathToKey);
         ArrayList separateKeys = separateKeys(keys);
         byte [][] firstKey = convertToMatrix((byte[]) separateKeys.get(0));
@@ -93,6 +114,47 @@ public class Aes {
         byte [][] decMessage = decryptMessage(matrixMessage,firstKey,secondKey,thirdKey);
         byte [] messageToDisk = convertMatrixToArr(decMessage);
         writeKeys(pathToOutput,messageToDisk);
+        */
+        byte [] keys = readKey(pathToKey);
+        ArrayList separateKeys = separateKeys(keys);
+        byte [] message = readKey(pathToInput);
+        byte [][] firstKey = convertToMatrix((byte[]) separateKeys.get(0));
+        byte [][] secondKey = convertToMatrix((byte[]) separateKeys.get(1));
+        byte [][] thirdKey = convertToMatrix((byte[]) separateKeys.get(2));
+        int index = 0;
+        byte [] finalToDisk = new byte[message.length];
+        while(index<message.length){
+            byte [] toDecrypt = new byte [16];
+            for(int i=0;i<16;i++){
+                toDecrypt[i]=message[i+index];
+            }
+            byte [][] matrixMessage = convertToMatrix(toDecrypt);
+            byte [][] encryptedMessage = decryptMessage(matrixMessage,firstKey,secondKey,thirdKey);
+            byte [] tempMessageToDisk = convertMatrixToArr(encryptedMessage);
+            for(int i=0;i<tempMessageToDisk.length;i++){
+                finalToDisk[i+index]=tempMessageToDisk[i];
+            }
+            index=index+16;
+        }
+        //FOR TEST ONLY
+
+        /*
+        byte [] forTEST = readKey("D:\\AES3_test_files\\test files\\message_long");
+        System.out.println(Arrays.equals(forTEST,finalToDisk));
+        */
+
+        writeKeys(pathToOutput,finalToDisk);
+    }
+
+    public void breakKey (String pathToMessage, String pathToCipher, String pathToOutput) throws IOException {
+        byte [] messageArr = readKey(pathToMessage);
+        byte [] cipherArr = readKey(pathToCipher);
+        byte [][] messageMatrix = convertToMatrix(messageArr);
+        byte [][] cipherMatrix = convertToMatrix(cipherArr);
+        byte [] keys = breakAesAlgorithm(messageMatrix,cipherMatrix);
+
+        writeKeys(pathToOutput,keys);
+
     }
 
     /**
@@ -204,6 +266,17 @@ public class Aes {
         }
         shiftedMessage[0][1] = message[3][1];
 
+        //shifting the third column two cells downwards
+        shiftedMessage[0][2] = message[2][2];
+        shiftedMessage[1][2] = message[3][2];
+        shiftedMessage[2][2] = message[0][2];
+        shiftedMessage[3][2] = message[1][2];
+        //shifting the fourth column three cells downwards
+        for (int i = 0; i < 3; i++) {
+            shiftedMessage[i][3] = message[i+1][3];
+        }
+        shiftedMessage[3][3] = message[0][3];
+
         return shiftedMessage;
     }
 
@@ -271,39 +344,59 @@ public class Aes {
     }
 
 
-    public void breakAesAlgorithm(byte[][] message, byte[][] cipher) {
+    /**
+     * this function breaks the keys
+     * @param message the plaintext
+     * @param cipher the cipher text
+     * @return he array of the keys
+     */
+    public byte [] breakAesAlgorithm(byte[][] message, byte[][] cipher) {
 
         byte[][] attackingBlock;
         byte[][] thirdKey;
-        byte[][] secondKey;
-        byte[][] firstKey;
+
 
         //first, randomize two keys that will aid in finding the third key
-        byte[] firstKeyVal = new byte[128];
-        byte[] secondKeyVal = new byte[128];
+        byte[] firstKeyVal = new byte[16];
+        byte[] secondKeyVal = new byte[16];
         for (int i = 0; i < firstKeyVal.length; i++) {
-            firstKeyVal[i] = (byte) ((int) (Math.random() * 128));
-            secondKeyVal[i] = (byte) ((int) (Math.random() * 128));
+            firstKeyVal[i] = (byte) ((int) (Math.random() * 255)-127);
+            secondKeyVal[i] = (byte) ((int) (Math.random() * 255)-127);
         }
         byte[][] firstRandomKey = convertToMatrix(firstKeyVal);
         byte[][] secondRandomKey = convertToMatrix(secondKeyVal);
 
         //now we will generate a new cipher-text using the 2 random
         attackingBlock = shiftColumns(message);
-        attackingBlock = addRoundKey(message, firstRandomKey);
+        attackingBlock = addRoundKey(attackingBlock, firstRandomKey);
         attackingBlock = shiftColumns(attackingBlock);
-        attackingBlock = addRoundKey(message, secondRandomKey);
+        attackingBlock = addRoundKey(attackingBlock, secondRandomKey);
 
         //with the two cipher-texts we can now find the actual third key:
-        thirdKey = retrievekey(attackingBlock, cipher);
+        thirdKey = retrieveKey(attackingBlock, cipher);
+        byte [] thirdKeyArr = convertMatrixToArr(thirdKey);
+        byte [] firstKeyArr = convertMatrixToArr(firstRandomKey);
+        byte [] secondKeyArr = convertMatrixToArr(secondRandomKey);
 
-        //todo: add later what the function returns, check how to connect to the calling function
-
+        byte [] finalKeyArr = new byte [3*16];
+        LinkedList<byte []> mergedArr = new LinkedList<>();
+        mergedArr.add(firstKeyArr);
+        mergedArr.add(secondKeyArr);
+        mergedArr.add(thirdKeyArr);
+        int counter=0;
+        for (byte [] arr : mergedArr){
+            for (int i=0;i<arr.length;i++){
+                finalKeyArr[i+counter]=arr[i];
+            }
+            counter=counter+16;
+        }
+        return finalKeyArr;
     }
 
-    private byte[][] retrievekey(byte[][] message, byte[][] cipher) {
+    private byte[][] retrieveKey(byte[][] message, byte[][] cipher) {
 
         byte[][] key = new byte[4][4];
+        message = shiftColumns(message);
         for (int i = 0; i < 4; i++) {
             for (int j = 0; j < 4; j++) {
                 key[i][j] = (byte) (message[i][j] ^ cipher[i][j]);

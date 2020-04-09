@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.Arrays;
 
 public class Main {
 
@@ -21,18 +20,9 @@ public class Main {
         }
         //break key
         else if(action.equals("-b")){
-
+            //notice pathToKey is not the key here, it is the message and the Input is the Cipher
+            aes.breakKey(pathToKey, pathToInput, pathToOutput);
         }
-
-
-        /*
-        Aes aes = new Aes();
-        byte [] temp = aes.readKey("C:\\Users\\tomer\\Desktop\\test files\\key_long");
-        //aes.writeKeys("C:\\Users\\tomer\\Desktop\\test files\\test.txt",temp);
-        byte [][] matrix = aes.convertToMatrix(temp);
-        byte [] temp2 = aes.convertMatrixToArr(matrix);
-        System.out.println(Arrays.equals(temp,temp2));
-        */
 
     }
 }
